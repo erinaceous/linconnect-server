@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=LinConnect
+Comment=LinConnect Server
+Icon=~/.linconnect/LinConnectServer/icon.png
+Exec=~/.linconnect/LinConnectServer/update.sh
+Terminal=false
+Type=Application
+X-GNOME-Autostart-Delay=15
+Name[en_CA]=linconnect-server
