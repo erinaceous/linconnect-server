@@ -94,11 +94,19 @@ class Server(object):
             notification_text = cherrypy.request.headers['d2'].replace('\x00', '').decode('utf-8', 'replace').encode('utf-8') 
             notification_package = cherrypy.request.headers['d3'] .replace('\x00', '').decode('utf-8', 'replace').encode('utf-8') 
             notif = Notify.Notification.new (notification_title, notification_text, get_icon(notification_package))
-            notif.show ()
+            try:
+                notif.show ()
+            except:
+                Notify.uninit()
+                Notify.init ("com.willhauck.linconnect")
+                notif.show ()
 
         return "true"
-        
-Notify.init ("LinConnect")
+
+if not Notify.init ("com.willhauck.linconnect"):
+    raise ImportError("Couldn't initialize libnotify")     
+
+
 cherrypy.server.socket_host = '0.0.0.0'
 print "Notification server started: LinConnect on " + get_lan_ip()
 notif = Notify.Notification.new ("Notification server started", "LinConnect on " + get_lan_ip(), "info")
