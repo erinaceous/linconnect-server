@@ -16,27 +16,26 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import cherrypy
-import gi
 from gi.repository import Notify
-import os
 import socket
-import time
 
-notification_title = ""
-notification_text = ""
+# Imports used for IP address display
+import fcntl
+import struct
 
-if os.name != "nt":
-    import fcntl
-    import struct
+SERVER_PORT=8080
 
-    def get_interface_ip(ifname):
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        return socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, struct.pack('256s',
-                                ifname[:15]))[20:24])
+_notification_title = ""
+_notification_text = ""
+
+def get_interface_ip(ifname):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    return socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, struct.pack('256s',
+                            ifname[:15]))[20:24])
 
 def get_lan_ip():
     ip = socket.gethostbyname(socket.gethostname())
-    if ip.startswith("127.") and os.name != "nt":
+    if ip.startswith("127."):
         interfaces = [
             "eth0",
             "eth1",
@@ -80,35 +79,39 @@ def get_icon(x):
             # Test
             'com.test':'face-smile',
             
-}.get(x, "dialog-information")
+}.get(x, "dialog-information") # Default icon
 
 class Server(object):
     @cherrypy.expose
     def index(self):
-        global notification_title
-        global notification_text
+        global _notification_title
+        global _notification_text
 
         # Ensure the notification is not a duplicate
-        if (notification_title != cherrypy.request.headers['d1']) or (notification_text != cherrypy.request.headers['d2']):   
-            notification_title = cherrypy.request.headers['d1'].replace('\x00', '').decode('utf-8', 'replace').encode('utf-8') 
-            notification_text = cherrypy.request.headers['d2'].replace('\x00', '').decode('utf-8', 'replace').encode('utf-8') 
-            notification_package = cherrypy.request.headers['d3'] .replace('\x00', '').decode('utf-8', 'replace').encode('utf-8') 
-            notif = Notify.Notification.new (notification_title, notification_text, get_icon(notification_package))
+        if (_notification_title != cherrypy.request.headers['d1']) or (_notification_text != cherrypy.request.headers['d2']):
+            
+            # Get notification data from HTTP header
+            _notification_title = cherrypy.request.headers['d1'].replace('\x00', '').decode('iso-8859-1', 'replace').encode('utf-8') 
+            _notification_text = cherrypy.request.headers['d2'].replace('\x00', '').decode('iso-8859-1', 'replace').encode('utf-8') 
+            notification_package = cherrypy.request.headers['d3'].replace('\x00', '').decode('iso-8859-1', 'replace').encode('utf-8') 
+            
+            # Send the notification
+            notif = Notify.Notification.new (_notification_title, _notification_text, get_icon(notification_package))
             try:
                 notif.show ()
             except:
+                # Workaround for org.freedesktop.DBus.Error.ServiceUnknown
                 Notify.uninit()
-                Notify.init ("com.willhauck.linconnect")
-                notif.show ()
+                Notify.init("com.willhauck.linconnect")
+                notif.show()
 
         return "true"
 
-if not Notify.init ("com.willhauck.linconnect"):
+if not Notify.init("com.willhauck.linconnect"):
     raise ImportError("Couldn't initialize libnotify")     
-
-
 cherrypy.server.socket_host = '0.0.0.0'
+cherrypy.server.socket_port = SERVER_PORT
 print "Notification server started: LinConnect on " + get_lan_ip()
-notif = Notify.Notification.new ("Notification server started", "LinConnect on " + get_lan_ip(), "info")
-notif.show ()
+notif = Notify.Notification.new("Notification server started", "LinConnect on " + get_lan_ip(), "info")
+notif.show()
 cherrypy.quickstart(Server())
