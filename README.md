@@ -20,4 +20,4 @@ Installation
 
 **Setup**
 
-Simply run linconnect-server.py to start the server. A notification will display the IP address to be entered into the Android client.
+Simply run linconnect-server.py to start the server. A notification will display the IP address to be entered into the Android client. The server can also be made to run at login the same as any other program.
