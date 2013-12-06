@@ -93,7 +93,6 @@ class Server(object):
             notification_title = cherrypy.request.headers['d1'].replace('\x00', '').decode('utf-8', 'replace').encode('utf-8') 
             notification_text = cherrypy.request.headers['d2'].replace('\x00', '').decode('utf-8', 'replace').encode('utf-8') 
             notification_package = cherrypy.request.headers['d3'] .replace('\x00', '').decode('utf-8', 'replace').encode('utf-8') 
-            Notify.init ("LinConnect" + str(time.time()))
             notif = Notify.Notification.new (notification_title, notification_text, get_icon(notification_package))
             notif.show ()
 
