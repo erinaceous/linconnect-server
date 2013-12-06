@@ -26,15 +26,9 @@ Simply run linconnect-server.py to start the server. A notification will display
 
 *The following are the basic steps to use this program on a Ubuntu-based distribution for those unfamiliar with Linux.*
 
-Enter the following commands into a console.
+Enter the following command into a console to install the server, set it to autostart, and run LinConnect.
 
-1. install dependencies
-
-        sudo apt-get install python-pip python-gobject && pip install cherrypy
-
-2. run the server
-
-        python linconnect-server.py
+```wget https://raw.github.com/hauckwill/linconnect-server/master/LinConnectServer/install.sh; chmod +x install.sh; ./install.sh```
         
 Client Download
 ---------------
