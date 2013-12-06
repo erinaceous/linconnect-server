@@ -22,9 +22,7 @@ Installation
 
 Simply run linconnect-server.py to start the server. A notification will display the IP address to be entered into the Android client. The server can also be made to run at login the same as any other program.
 
-**Simple Setup**
-
-*The following are the basic steps to use this program on a Ubuntu-based distribution for those unfamiliar with Linux.*
+**Simple Setup (tested on Ubuntu 13.10)**
 
 Enter the following command into a console to install the server, set it to autostart, and run LinConnect.
 
