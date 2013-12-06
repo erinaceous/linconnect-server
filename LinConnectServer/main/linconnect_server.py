@@ -78,6 +78,8 @@ def get_icon(x):
             
             # Test
             'com.test':'face-smile',
+            'act.edit-add':'edit-add',
+            'act.edit-delete':'edit-delete',
             
 }.get(x, "dialog-information") # Default icon
 
@@ -92,7 +94,7 @@ class Server(object):
             
             # Get notification data from HTTP header
             _notification_title = cherrypy.request.headers['d1'].replace('\x00', '').decode('iso-8859-1', 'replace').encode('utf-8') 
-            _notification_text = cherrypy.request.headers['d2'].replace('\x00', '').decode('iso-8859-1', 'replace').encode('utf-8') 
+            _notification_text = cherrypy.request.headers['d2'].replace('\x00', '').decode('iso-8859-1', 'replace').encode('utf-8')
             notification_package = cherrypy.request.headers['d3'].replace('\x00', '').decode('iso-8859-1', 'replace').encode('utf-8') 
             
             # Send the notification
