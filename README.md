@@ -19,4 +19,5 @@ Installation
 * libnotify, python-gobject
 
 **Setup**
+
 Simply run linconnect-server.py to start the server. A notification will display the IP address to be entered into the Android client.
