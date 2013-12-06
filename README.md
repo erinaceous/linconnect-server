@@ -15,9 +15,23 @@ Installation
 **Requirements**
 
 * python 2.x
-* cherrypy (pip install cherrypy)
+* cherrypy
 * libnotify, python-gobject
 
-**Setup**
+**Running**
 
 Simply run linconnect-server.py to start the server. A notification will display the IP address to be entered into the Android client. The server can also be made to run at login the same as any other program.
+
+**Simple Setup**
+
+*The following are the basic steps to use this program on a Ubuntu-based distribution for those unfamiliar with Linux.*
+
+Enter the following commands into a console.
+
+1. install dependencies
+
+        sudo apt-get install python-pip python-gobject && pip install cherrypy
+
+2. run the server
+
+        python linconnect-server.py
