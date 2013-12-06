@@ -23,6 +23,7 @@ import socket
 import fcntl
 import struct
 
+# Configuration
 SERVER_PORT=8080
 
 _notification_title = ""
