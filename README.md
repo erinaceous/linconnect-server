@@ -26,7 +26,11 @@ Simply run linconnect-server.py to start the server. A notification will display
 
 Enter the following command into a console to install the server, set it to autostart, and run LinConnect.
 
-```wget https://raw.github.com/hauckwill/linconnect-server/master/LinConnectServer/install.sh; chmod +x install.sh; ./install.sh```
+```bash
+$ wget https://raw.github.com/hauckwill/linconnect-server/master/LinConnectServer/install.sh; \
+chmod +x install.sh; \
+./install.sh
+```
         
 Client Download
 ---------------
