@@ -23,38 +23,36 @@ import socket
 import fcntl
 import struct
 
+# Import for finding IP address
+import subprocess
+
 # Configuration
 SERVER_PORT=8080
 
 _notification_title = ""
 _notification_text = ""
 
-def get_interface_ip(ifname):
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    return socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, struct.pack('256s',
-                            ifname[:15]))[20:24])
-
 def get_lan_ip():
-    ip = socket.gethostbyname(socket.gethostname())
-    if ip.startswith("127."):
-        interfaces = [
-            "eth0",
-            "eth1",
-            "eth2",
-            "wlan0",
-            "wlan1",
-            "wifi0",
-            "ath0",
-            "ath1",
-            "ppp0",
-            ]
-        for ifname in interfaces:
-            try:
-                ip = get_interface_ip(ifname)
-                break
-            except IOError:
-                pass
-    return ip
+	#Use the standard ifconfig utility to get our ip address
+	ifconfig = subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE) 
+	#Get STDOUT	from ifconfig
+	output = ifconfig.communicate()[0]
+
+	#Split the output by devices
+	devices = output.split("\n\n") 
+	currentDevice = 0
+
+	for i in devices:
+		#If we have a device set to "running" and it isn't loopback use it
+		if ("RUNNING" in i) and not ("LOOPBACK" in i) and ("inet" in i): 
+			currentDevice = i
+			break
+
+	#Get the inet addresss
+	inetLocation = currentDevice.find("inet")
+	ip = currentDevice[inetLocation+5:(currentDevice.find(" ",inetLocation+5))]
+
+	return ip
 
 def get_icon(x):
     return {
