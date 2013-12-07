@@ -11,6 +11,7 @@ echo "Setting up LinConnect...";
 git remote add upstream https://github.com/hauckwill/linconnect-server.git;
 mkdir -p ~/.config/autostart/;
 cp ~/.linconnect/LinConnectServer/linconnect-server.desktop ~/.config/autostart/;
+chmod +x ~/.config/autostart/linconnect-server.desktop;
 chmod +x ~/.linconnect/LinConnectServer/update.sh;
 
 function ask {
