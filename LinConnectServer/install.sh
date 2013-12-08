@@ -39,7 +39,7 @@ echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
     mkdir -p ~/.config/autostart/
-	cp ~/.linconnect/LinConnectServer/linconnect-server.desktop ~/.config/autostart/
+	printf '[Desktop Entry]\nName=linconnect-server\nComment=LinConnect Server\nIcon=$HOME/.linconnect/LinConnectServer/icon.png\nExec=$HOME/.linconnect/LinConnectServer/update.sh\nTerminal=false\nType=Application' > ~/.config/autostart/linconnect-server.desktop
 	chmod +x ~/.config/autostart/linconnect-server.desktop
 fi
 
