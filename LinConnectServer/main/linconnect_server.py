@@ -142,8 +142,9 @@ if parser.getboolean('connection', 'enable_bonjour') == 1:
     thr = threading.Thread(target=initialize_bonjour)
     thr.start() 
 
-print "Configuration instructions at http://localhost:" + parser.get('connection', 'port')
-notif = Notify.Notification.new("Notification server started", "Configuration instructions at\nhttp://localhost:" + parser.get('connection', 'port'), "info")
+config_instructions = "Configuration instructions at http://localhost:" + parser.get('connection', 'port')
+print config_instructions
+notif = Notify.Notification.new("Notification server started", config_instructions, "info")
 notif.show()
 
 cherrypy.server.socket_host = '0.0.0.0'
