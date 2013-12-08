@@ -23,7 +23,6 @@ import commands
 from gi.repository import Notify
 import ConfigParser
 import os
-import inspect
 import pybonjour
 import select
 import threading
@@ -58,7 +57,7 @@ del conf_file
 # Must append port because Java Bonjour library can't determine it
 _service_name = platform.node()
 
-icon_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) + "/icon_cache.png"
+icon_path = os.path.join(current_dir, "icon_cache.png")
 
 class Notification(object):
     if parser.getboolean('other', 'enable_instruction_webpage') == 1:
