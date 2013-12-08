@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 read -p "Install LinConnect server? [Y/N]" -n 1 -r
 echo    # (optional) move to a new line
 if [[ ! $REPLY =~ ^[Yy]$ ]]
@@ -39,7 +40,7 @@ echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
     mkdir -p ~/.config/autostart/
-	printf '[Desktop Entry]\nVersion=1.0\nType=Application\nHidden=false\nTerminal=false\nIcon=phone\nName=LinConnect\nExec=/home/will/.linconnect/LinConnectServer/update.sh\nPath=/home/will/.linconnect/LinConnectServer' > ~/.config/autostart/linconnect-server.desktop
+	printf '[Desktop Entry]\nVersion=1.0\nType=Application\nHidden=false\nTerminal=false\nIcon=phone\nName=LinConnect\nExec=%s/.linconnect/LinConnectServer/update.sh\nPath=%s/.linconnect/LinConnectServer' $HOME $HOME > ~/.config/autostart/linconnect-server.desktop
 	chmod +x ~/.config/autostart/linconnect-server.desktop
 fi
 

@@ -14,20 +14,23 @@ Installation
 
 **Requirements**
 
-* python 2.x
-* cherrypy
-* libnotify, python-gobject
+* python2
+* python-pip
+* python-gobject
+* libavahi-compat-libdnssd1
+* cherrypy (python package)
+* pybonjour (python package)
 
 **Running**
 
-Simply run linconnect-server.py to start the server. A notification will display the IP address to be entered into the Android client. The server can also be made to run at login the same as any other program.
+Simply run linconnect_server.py to start the server, then start the Android application. The Android application will detect the server and display it in the server list. Selecting it will send a test notification to the server.
 
 **Simple Setup (tested on Ubuntu 13.10)**
 
-Enter the following command into a console to install the server, set it to autostart, and run LinConnect.
+Enter the following command into a console to install the server, set it to autostart, and run LinConnect. The server will be automatically updated daily.
 
 ```bash
-$ wget https://raw.github.com/hauckwill/linconnect-server/master/LinConnectServer/install.sh; \
+$ wget --quiet https://raw.github.com/hauckwill/linconnect-server/master/LinConnectServer/install.sh; \
 chmod +x install.sh; \
 ./install.sh
 ```
