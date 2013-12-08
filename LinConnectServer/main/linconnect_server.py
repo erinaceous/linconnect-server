@@ -36,12 +36,14 @@ _notification_header = ""
 _notification_description = ""
 
 # Configuration
+current_dir = os.path.abspath(os.path.dirname(__file__))
+conf_file = os.path.join(current_dir, 'conf.ini')
 try:
-    with open('conf.ini'):
+    with open(conf_file):
         print "Loading conf.ini"
 except IOError:
     print "Creating conf.ini"
-    with open('conf.ini', 'w') as text_file:
+    with open(conf_file, 'w') as text_file:
         text_file.write("""[connection]
 port = 9090
 enable_bonjour = 1
@@ -50,7 +52,8 @@ enable_bonjour = 1
 enable_instruction_webpage = 1""")
 
 parser = ConfigParser.ConfigParser()
-parser.read('conf.ini')
+parser.read(conf_file)
+del conf_file
 
 # Must append port because Java Bonjour library can't determine it
 _service_name = platform.node()
@@ -59,7 +62,7 @@ icon_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe
 
 class Notification(object):
     if parser.getboolean('other', 'enable_instruction_webpage') == 1:
-        with open(os.path.join(os.path.dirname(__file__), 'index.html'), 'rb') as f:
+        with open(os.path.join(current_dir, 'index.html'), 'rb') as f:
             _index_source = f.read()
 
         def index(self):
