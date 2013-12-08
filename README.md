@@ -23,7 +23,7 @@ Installation
 
 **Running**
 
-Simply run linconnect-server.py to start the server, then start the Android application. The Android application will detect the server and display it in the server list using zeroconf.
+Simply run linconnect_server.py to start the server, then start the Android application. The Android application will detect the server and display it in the server list. Selecting it will send a test notification to the server.
 
 **Simple Setup (tested on Ubuntu 13.10)**
 
