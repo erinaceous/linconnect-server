@@ -21,7 +21,7 @@ then
 	echo "* pybonjour (python package)"
 else
 	echo "Installing dependencies..."
-	sudo apt-get install python-pip python-gobject git libavahi-compat-libdnssd1
+	sudo apt-get install -y python-pip python-gobject git libavahi-compat-libdnssd1
 	echo "Installing Python dependencies..."
 	sudo pip install cherrypy pybonjour
 fi
