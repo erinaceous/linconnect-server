@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 read -p "Install LinConnect server? [Y/N]" -n 1 -r
 echo    # (optional) move to a new line
 if [[ ! $REPLY =~ ^[Yy]$ ]]
