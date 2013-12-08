@@ -36,6 +36,20 @@ _notification_header = ""
 _notification_description = ""
 
 # Configuration
+try:
+    with open('conf.ini'):
+        print "Loading conf.ini"
+except IOError:
+    print "Creating conf.ini"
+    text_file = open('conf.ini', 'w')
+    text_file.write("""[connection]
+port = 9090
+enable_bonjour = 1
+
+[other]
+enable_instruction_webpage = 1""")
+    text_file.close()
+
 parser = ConfigParser.ConfigParser()
 parser.read('conf.ini')
 
