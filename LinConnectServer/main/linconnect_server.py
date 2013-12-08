@@ -1,103 +1,139 @@
-#     LinConnect: Mirror Android notifications on Linux Desktop
-#     
-#     Copyright (C) 2013  Will Hauck
-# 
-#     This program is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
-#     (at your option) any later version.
-# 
-#     This program is distributed in the hope that it will be useful,
-#     but WITHOUT ANY WARRANTY; without even the implied warranty of
-#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#     GNU General Public License for more details.
-# 
-#     You should have received a copy of the GNU General Public License
-#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+'''
+    LinConnect: Mirror Android notifications on Linux Desktop
+     
+    Copyright (C) 2013  Will Hauck
+ 
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+ 
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+ 
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+'''
 
+# Imports
 import cherrypy
+import commands
 from gi.repository import Notify
-import socket
+import ConfigParser
+import os
+import inspect
+import pybonjour
+import select
+import threading
+import platform
 
-# Imports used for IP address display
-import fcntl
-import struct
+version = "3"
 
-# Import for finding IP address
-import subprocess
+# Global Variables
+_notification_header = ""
+_notification_description = ""
 
 # Configuration
-SERVER_PORT=8080
+parser = ConfigParser.ConfigParser()
+parser.read('conf.ini')
 
-_notification_title = ""
-_notification_text = ""
+# Must append port because Java Bonjour library can't determine it
+_service_name = platform.node()
 
-def get_lan_ip():
-	#Use the standard ifconfig utility to get our ip address
-	ifconfig = subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE) 
-	#Get STDOUT	from ifconfig
-	output = ifconfig.communicate()[0]
+icon_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) + "/icon_cache.png"
 
-	#Split the output by devices
-	devices = output.split("\n\n") 
-	currentDevice = 0
-
-	for i in devices:
-		#If we have a device set to "running" and it isn't loopback use it
-		if ("RUNNING" in i) and not ("LOOPBACK" in i) and ("inet" in i): 
-			currentDevice = i
-			break
-
-	#Get the inet addresss
-	inetLocation = currentDevice.find("inet")
-	ip = currentDevice[inetLocation+5:(currentDevice.find(" ",inetLocation+5))]
-
-	return ip
-
-def get_icon(x):
-    return {
-            # Social
-            'com.google.android.phone': "phone",
-            'com.google.android.talk': 'applications-chat',
-            'com.google.android.gm': 'applications-mail',
-            'com.google.apps.plus':'system-config-users',
-            'com.facebook.katana':'system-config-users',
-            'com.twitter.android':'system-config-users',
-            'com.google.android.calendar': 'calendar',
+class Notification(object):
+    if parser.getboolean('other', 'enable_instruction_webpage') == 1:
+        def index(self):
+            return """
+            <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+    
+            <html>
+            <head>
+                <link href='http://fonts.googleapis.com/css?family=Roboto:400,300' rel=
+                'stylesheet' type='text/css'>
+                <style type="text/css">
+                    body {
+                        background-image:url('http://i.imgur.com/l32gHMA.png');
+                background-repeat:repeat;
+                    }
+                    
+                    .box {
+                        width: 400px;
+                        height: 375px;
             
-            # System
-            'com.google.android.gms': 'system-software-install.svg',
+                        position: absolute;
+                        top:0;
+                        bottom: 0;
+                        left: 0;
+                        right: 0;
             
-            # Media
-            'com.google.android.music': 'multimedia-player',
-            'com.google.android.youtube':'applications-multimedia',
+                        margin: auto;
+                        text-align:center;
+                    }
+                        
+                    a:link {color:#505050;}    /* unvisited link */
+                    a:visited {color:#505050;} /* visited link */
+                    a:hover {color:#202020;}   /* mouse over link */
+                    a:active {color:#A0A0A0;}  /* selected link */
+                        
+                </style>
+                <title>LinConnect</title>
+            </head>
             
-            # Other
-            'com.mobnetic.coinguardian': 'applications-office',
+            <body>
+                <div class="box">
+                    <h1 style="font-family: 'Roboto', sans-serif; font-weight:300;">
+                    LinConnect r""" + version + """ Server Up</h1><span style=
+                    "font-family: 'Roboto', sans-serif; font-weight:400;"><b>Local IP
+                    Addresses</b><br><i>For Use in Client Configuration</i><br><pre>""" + get_local_ip("<br>") + """</pre></span>
+                    <a href=
+                    "https://play.google.com/store/apps/details?id=com.willhauck.linconnectclient">
+                    <img alt="Android app on Google Play" src=
+                    "https://developer.android.com/images/brand/en_app_rgb_wo_60.png"></a><br>
             
-            # Test
-            'com.test':'face-smile',
-            'act.edit-add':'edit-add',
-            'act.edit-delete':'edit-delete',
+                    <br>
+                    <span style=
+                    "font-family: 'Roboto', sans-serif; font-weight:300;"><a href=
+                    "https://plus.google.com/+WillHauckYYC">Google Plus</a> | <a href=
+                    "https://github.com/hauckwill">GitHub</a> | Donate via <a href=
+                    "https://play.google.com/store/apps/details?id=com.willhauck.donation">Google
+                    Play</a> / <a href=
+                    "bitcoin:1125MguyS1feaop99bCDPQG6ukUcMuvVBo?label=Will%20Hauck&amp;message=Donation%20for%20LinConnect">
+                    Bitcoin</a></span>
+                </div>
+            </body>
+            </html>"""
+        index.exposed = True
+    
+    def notif(self, notif_icon):
+        global _notification_header
+        global _notification_description
+        
+        # Get icon
+        try:
+            os.remove("icon_cache.png") 
+        except:
+            print "Creating icon cache..."
+        file_object = open("icon_cache.png", "a")
+        while True:
+            data = notif_icon.file.read(8192)
+            if not data:
+                break
+            file_object.write(data)
+        file_object.close()
             
-}.get(x, "dialog-information") # Default icon
-
-class Server(object):
-    @cherrypy.expose
-    def index(self):
-        global _notification_title
-        global _notification_text
-
         # Ensure the notification is not a duplicate
-        if (_notification_title != cherrypy.request.headers['d1']) or (_notification_text != cherrypy.request.headers['d2']):
+        if (_notification_header != cherrypy.request.headers['NOTIF-HEADER']) or (_notification_description != cherrypy.request.headers['NOTIF-DESCRIPTION']):
             
             # Get notification data from HTTP header
-            _notification_title = cherrypy.request.headers['d1'].replace('\x00', '').decode('iso-8859-1', 'replace').encode('utf-8') 
-            _notification_text = cherrypy.request.headers['d2'].replace('\x00', '').decode('iso-8859-1', 'replace').encode('utf-8')
-            notification_package = cherrypy.request.headers['d3'].replace('\x00', '').decode('iso-8859-1', 'replace').encode('utf-8') 
+            _notification_header = cherrypy.request.headers['NOTIF-HEADER'].replace('\x00', '').decode('iso-8859-1', 'replace').encode('utf-8') 
+            _notification_description = cherrypy.request.headers['NOTIF-DESCRIPTION'].replace('\x00', '').decode('iso-8859-1', 'replace').encode('utf-8')
             
             # Send the notification
-            notif = Notify.Notification.new (_notification_title, _notification_text, get_icon(notification_package))
+            notif = Notify.Notification.new (_notification_header, _notification_description, icon_path)
             try:
                 notif.show ()
             except:
@@ -107,12 +143,49 @@ class Server(object):
                 notif.show()
 
         return "true"
+    notif.exposed = True
+    
+def register_callback(sdRef, flags, errorCode, name, regtype, domain):
+    if errorCode == pybonjour.kDNSServiceErr_NoError:
+        print "Registered Bonjour service " + name
+        
+def initialize_bonjour(): 
+    sdRef = pybonjour.DNSServiceRegister(name = _service_name,
+                                     regtype = "_linconnect._tcp",
+                                     port = int(parser.get('connection', 'port')),
+                                     callBack = register_callback)
+    try:
+        try:
+            while True:
+                ready = select.select([sdRef], [], [])
+                if sdRef in ready[0]:
+                    pybonjour.DNSServiceProcessResult(sdRef)
+        except KeyboardInterrupt:
+            pass
+    finally:
+        sdRef.close()
 
+def get_local_ip(delim):
+    ips = ""
+    for ip in commands.getoutput("/sbin/ip address | grep -i 'inet ' | awk {'print $2'} | sed -e 's/\/[^\/]*$//'").split("\n"):
+        if "127" not in ip:
+            ips += ip + ":" + parser.get('connection', 'port') + delim
+    return ips
+       
+# Initialization
 if not Notify.init("com.willhauck.linconnect"):
-    raise ImportError("Couldn't initialize libnotify")     
-cherrypy.server.socket_host = '0.0.0.0'
-cherrypy.server.socket_port = SERVER_PORT
-print "Notification server started: LinConnect on " + get_lan_ip()
-notif = Notify.Notification.new("Notification server started", "LinConnect on " + get_lan_ip(), "info")
+    raise ImportError("Error initializing libnotify")     
+
+# Start Bonjour if desired
+if parser.getboolean('connection', 'enable_bonjour') == 1:
+    thr = threading.Thread(target=initialize_bonjour)
+    thr.start() 
+
+print "Configuration instructions at http://localhost:" + parser.get('connection', 'port')
+notif = Notify.Notification.new("Notification server started", "Configuration instructions at\nhttp://localhost:" + parser.get('connection', 'port'), "info")
 notif.show()
-cherrypy.quickstart(Server())
+
+cherrypy.server.socket_host = '0.0.0.0'
+cherrypy.server.socket_port = int(parser.get('connection', 'port'))
+
+cherrypy.quickstart(Notification())

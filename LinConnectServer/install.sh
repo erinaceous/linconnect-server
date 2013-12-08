@@ -1,29 +1,55 @@
 #!/bin/bash
-echo "Installing dependencies...";
-sudo echo
-sudo apt-get install python-pip python-gobject git;
-echo "Installing Python dependencies...";
-sudo pip install cherrypy;
-echo "Installing LinConnect...";
-git clone https://github.com/hauckwill/linconnect-server.git ~/.linconnect;
-cd ~/.linconnect;
-echo "Setting up LinConnect...";
-git remote add upstream https://github.com/hauckwill/linconnect-server.git;
-mkdir -p ~/.config/autostart/;
-cp ~/.linconnect/LinConnectServer/linconnect-server.desktop ~/.config/autostart/;
-chmod +x ~/.config/autostart/linconnect-server.desktop;
-chmod +x ~/.linconnect/LinConnectServer/update.sh;
+read -p "Install LinConnect server? [Y/N]" -n 1 -r
+echo    # (optional) move to a new line
+if [[ ! $REPLY =~ ^[Yy]$ ]]
+then
+    exit 1
+fi
 
-function ask {
-    echo $1        # add this line
-    read -n 1 -r
-    if [[ $REPLY =~ ^[Yy]$ ]]
-    then
-            ~/.linconnect/LinConnectServer/update.sh;
-    else
-            exit
-    fi
-}
+sudo true
 
-ask "Installed LinConnect to ~/.config/autostart. Start LinConnect now? [y/n]";
+read -p "Install dependencies automatically (for Debian-based distros) [Y/N]" -n 1 -r
+echo    # (optional) move to a new line
+if [[ ! $REPLY =~ ^[Yy]$ ]]
+then
+    echo "Please manually install the following:"
+	echo "* python2"
+	echo "* python-pip"
+	echo "* python-gobject"
+	echo "* libavahi-compat-libdnssd1"
+	echo "* cherrypy (python package)"
+	echo "* pybonjour (python package)"
+else
+	echo "Installing dependencies..."
+	sudo apt-get install python-pip python-gobject git libavahi-compat-libdnssd1
+	echo "Installing Python dependencies..."
+	sudo pip install cherrypy pybonjour
+fi
+
+read -p "Press any key to continue..." -n 1 -r
+
+echo "Installing LinConnect..."
+git clone -q https://github.com/hauckwill/linconnect-server.git ~/.linconnect
+cd ~/.linconnect
+echo "Setting up LinConnect..."
+git remote add upstream https://github.com/hauckwill/linconnect-server.git
+
+read -p "Autostart LinConnect server on boot? [Y/N]" -n 1 -r
+echo    # (optional) move to a new line
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    mkdir -p ~/.config/autostart/
+	cp ~/.linconnect/LinConnectServer/linconnect-server.desktop ~/.config/autostart/
+	chmod +x ~/.config/autostart/linconnect-server.desktop
+fi
+
+chmod +x ~/.linconnect/LinConnectServer/update.sh
+
+read -p "Install complete. Start LinConnect server now? [Y/N]" -n 1 -r
+echo    # (optional) move to a new line
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    ~/.linconnect/LinConnectServer/update.sh
+fi
+
 
