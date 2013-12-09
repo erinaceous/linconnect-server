@@ -17,15 +17,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from __future__ import print_function
+
 # Imports
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 import os
+import sys
 import select
 import threading
 import platform
 
 import cherrypy
-import commands
+import subprocess
 from gi.repository import Notify
 import pybonjour
 
@@ -40,9 +46,9 @@ current_dir = os.path.abspath(os.path.dirname(__file__))
 conf_file = os.path.join(current_dir, 'conf.ini')
 try:
     with open(conf_file):
-        print "Loading conf.ini"
+        print("Loading conf.ini")
 except IOError:
-    print "Creating conf.ini"
+    print("Creating conf.ini")
     with open(conf_file, 'w') as text_file:
         text_file.write("""[connection]
 port = 9090
@@ -79,17 +85,18 @@ class Notification(object):
         try:
             os.remove("icon_cache.png")
         except:
-            print "Creating icon cache..."
+            print("Creating icon cache...")
         file_object = open("icon_cache.png", "a")
         while True:
             data = notif_icon.file.read(8192)
             if not data:
                 break
-            file_object.write(data)
+            file_object.write(str(data))
         file_object.close()
 
         # Ensure the notification is not a duplicate
-        if (_notification_header != cherrypy.request.headers['NOTIF-HEADER']) or (_notification_description != cherrypy.request.headers['NOTIF-DESCRIPTION']):
+        if (_notification_header != cherrypy.request.headers['NOTIF-HEADER']) \
+        or (_notification_description != cherrypy.request.headers['NOTIF-DESCRIPTION']):
 
             # Get notification data from HTTP header
             _notification_header = cherrypy.request.headers['NOTIF-HEADER'].replace('\x00', '').decode('iso-8859-1', 'replace').encode('utf-8')
@@ -111,7 +118,7 @@ class Notification(object):
 
 def register_callback(sdRef, flags, errorCode, name, regtype, domain):
     if errorCode == pybonjour.kDNSServiceErr_NoError:
-        print "Registered Bonjour service " + name
+        print("Registered Bonjour service " + name)
 
 
 def initialize_bonjour():
@@ -133,7 +140,7 @@ def initialize_bonjour():
 
 def get_local_ip(delim):
     ips = ""
-    for ip in commands.getoutput("/sbin/ip address | grep -i 'inet ' | awk {'print $2'} | sed -e 's/\/[^\/]*$//'").split("\n"):
+    for ip in subprocess.check_output("/sbin/ip address | grep -i 'inet ' | awk {'print $2'} | sed -e 's/\/[^\/]*$//'", shell=True).split("\n"):
         if "127" not in ip:
             ips += ip + ":" + parser.get('connection', 'port') + delim
     return ips
@@ -148,7 +155,7 @@ if parser.getboolean('connection', 'enable_bonjour') == 1:
     thr.start()
 
 config_instructions = "Configuration instructions at http://localhost:" + parser.get('connection', 'port')
-print config_instructions
+print(config_instructions)
 notif = Notify.Notification.new("Notification server started", config_instructions, "info")
 notif.show()
 
