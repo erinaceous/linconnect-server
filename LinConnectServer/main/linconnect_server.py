@@ -55,7 +55,8 @@ port = 9090
 enable_bonjour = 1
 
 [other]
-enable_instruction_webpage = 1""")
+enable_instruction_webpage = 1
+notify_timeout = 0""")
 
 parser = ConfigParser.ConfigParser()
 parser.read(conf_file)
@@ -104,6 +105,7 @@ class Notification(object):
 
             # Send the notification
             notif = Notify.Notification.new(_notification_header, _notification_description, icon_path)
+            notif.set_timeout(parser.getint('other', 'notify_timeout'))
             try:
                 notif.show()
             except:
